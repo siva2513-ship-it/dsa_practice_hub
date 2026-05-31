@@ -6,7 +6,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sivakarthik.WebProject1.model.Problem;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Service
 public class ProblemService {
@@ -77,6 +80,44 @@ public class ProblemService {
         String url = "https://codeforces.com/api/problemset.problems";
 
         return restTemplate.getForObject(url, String.class);
+    }
+
+    public void loadProblemsFromCodeforces() throws Exception {
+
+        String url = "https://codeforces.com/api/problemset.problems";
+
+        String response = restTemplate.getForObject(url, String.class);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        JsonNode root = mapper.readTree(response);
+
+        JsonNode problems = root.path("result").path("problems");
+
+        allProblems.clear();
+
+        for (JsonNode p : problems) {
+
+            Problem problem = new Problem();
+
+            problem.setContestId(p.path("contestId").asInt());
+            problem.setIndex(p.path("index").asText());
+            problem.setName(p.path("name").asText());
+
+            if (!p.path("rating").isMissingNode()) {
+                problem.setRating(p.path("rating").asInt());
+            }
+
+            List<String> tags = new ArrayList<>();
+
+            for (JsonNode tag : p.path("tags")) {
+                tags.add(tag.asText());
+            }
+
+            problem.setTags(tags);
+
+            allProblems.add(problem);
+        }
     }
 
 }

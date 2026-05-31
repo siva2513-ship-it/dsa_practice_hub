@@ -29,6 +29,10 @@ public class ProblemController {
     public ResponseEntity<List<Problem>> getAll() {
         return ResponseEntity.ok(problemService.getAllProblems());
     }
+    @GetMapping("/cf")
+    public ResponseEntity<String> getCfProblems() {
+        return ResponseEntity.ok(problemService.getProblemsFromCodeforces());
+    }
     @GetMapping("/{contestId}/{index}")
     public ResponseEntity<Problem> getOne(@PathVariable Integer contestId, @PathVariable String index) {
         Problem problem = problemService.getOneProblem(contestId, index);
@@ -38,9 +42,14 @@ public class ProblemController {
             return ResponseEntity.notFound().build();
         }
     }
-    @GetMapping("/tag/{tag}")
+    @GetMapping("/cf/tags/{tag}")
     public ResponseEntity<List<Problem>> getAllProblemsOfTag(@PathVariable String tag) {
         return ResponseEntity.ok(problemService.getAllProblemsOfTag(tag));
+    }
+    @GetMapping("/cf/load")
+    public String loadProblems() throws Exception {
+        problemService.loadProblemsFromCodeforces();
+        return "Loaded Successfully";
     }
 
     //Post
@@ -71,8 +80,5 @@ public class ProblemController {
         }
     }
 
-    @GetMapping("/cf")
-    public ResponseEntity<String> getCfProblems() {
-        return ResponseEntity.ok(problemService.getProblemsFromCodeforces());
-    }
+
 }
