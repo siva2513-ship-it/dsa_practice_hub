@@ -18,10 +18,10 @@ import com.sivakarthik.WebProject1.service.ProblemService;
 @RestController
 @RequestMapping("/api/problems")
 public class ProblemController {
-    private ProblemService problemService;
+    private final ProblemService problemService;
 
-    public ProblemController() {
-        problemService = new ProblemService();
+    public ProblemController(ProblemService problemService) {
+        this.problemService = problemService;
     }
 
     //Get
@@ -37,6 +37,10 @@ public class ProblemController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+    @GetMapping("/tag/{tag}")
+    public ResponseEntity<List<Problem>> getAllProblemsOfTag(@PathVariable String tag) {
+        return ResponseEntity.ok(problemService.getAllProblemsOfTag(tag));
     }
 
     //Post
@@ -65,5 +69,10 @@ public class ProblemController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/cf")
+    public ResponseEntity<String> getCfProblems() {
+        return ResponseEntity.ok(problemService.getProblemsFromCodeforces());
     }
 }
