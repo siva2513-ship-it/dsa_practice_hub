@@ -3,6 +3,7 @@ package com.sivakarthik.WebProject1.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,11 +11,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sivakarthik.WebProject1.model.Problem;
 import com.sivakarthik.WebProject1.service.ProblemService;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/problems")
 public class ProblemController {
@@ -24,15 +27,24 @@ public class ProblemController {
         this.problemService = problemService;
     }
 
-    //Get
+    // Get
     @GetMapping
-    public ResponseEntity<List<Problem>> getAll() {
-        return ResponseEntity.ok(problemService.getAllProblems());
+    public ResponseEntity<List<Problem>> getAll(
+            @RequestParam(required = false) String tag,
+            @RequestParam(required = false) Integer ratingMin,
+            @RequestParam(required = false) Integer ratingMax,
+            @RequestParam(required = false) String difficulty,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, defaultValue = "150") Integer limit) {
+        return ResponseEntity
+                .ok(problemService.getFilteredProblems(tag, ratingMin, ratingMax, difficulty, search, limit));
     }
+
     @GetMapping("/cf")
     public ResponseEntity<String> getCfProblems() {
         return ResponseEntity.ok(problemService.getProblemsFromCodeforces());
     }
+
     @GetMapping("/{contestId}/{index}")
     public ResponseEntity<Problem> getOne(@PathVariable Integer contestId, @PathVariable String index) {
         Problem problem = problemService.getOneProblem(contestId, index);
@@ -42,25 +54,28 @@ public class ProblemController {
             return ResponseEntity.notFound().build();
         }
     }
+
     @GetMapping("/cf/tags/{tag}")
     public ResponseEntity<List<Problem>> getAllProblemsOfTag(@PathVariable String tag) {
         return ResponseEntity.ok(problemService.getAllProblemsOfTag(tag));
     }
+
     @GetMapping("/cf/load")
     public String loadProblems() throws Exception {
         problemService.loadProblemsFromCodeforces();
         return "Loaded Successfully";
     }
 
-    //Post
+    // Post
     @PostMapping
     public ResponseEntity<Problem> create(@RequestBody Problem p) {
         return ResponseEntity.ok(problemService.createProblem(p));
     }
 
-    //Put
+    // Put
     @PutMapping("/{contestId}/{index}")
-    public ResponseEntity<Problem> update(@PathVariable Integer contestId, @PathVariable String index, @RequestBody Problem p) {
+    public ResponseEntity<Problem> update(@PathVariable Integer contestId, @PathVariable String index,
+            @RequestBody Problem p) {
         Problem updated = problemService.updateProblem(contestId, index, p);
         if (updated != null) {
             return ResponseEntity.ok(updated);
@@ -69,7 +84,7 @@ public class ProblemController {
         }
     }
 
-    //Delete
+    // Delete
     @DeleteMapping("/{contestId}/{index}")
     public ResponseEntity<Void> delete(@PathVariable Integer contestId, @PathVariable String index) {
         boolean deleted = problemService.deleteProblem(contestId, index);
@@ -79,6 +94,5 @@ public class ProblemController {
             return ResponseEntity.notFound().build();
         }
     }
-
 
 }
